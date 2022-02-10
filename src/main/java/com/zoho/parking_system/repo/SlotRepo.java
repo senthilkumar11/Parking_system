@@ -9,7 +9,7 @@ import com.zoho.parking_system.model.VehicleType;
 public interface SlotRepo extends JpaRepository<Slot, Integer> {
 
 	@Query(value="Select top 1 * from slot s where s.vehichle_type=?1 and s.availablity='A' order by s.floor_id , s.slot_number asc",nativeQuery=true)
-	Slot findNextAvailableSlot(int type);
+	Slot findNextAvailableSlot(String type);
 
 
 }

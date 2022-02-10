@@ -3,6 +3,8 @@ package com.zoho.parking_system.model;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
@@ -14,6 +16,7 @@ public class Slot {
 	private Integer floorId;
 	private Integer slotNumber;
 	private Character availablity;
+	@Enumerated(EnumType.STRING)
 	private VehicleType vehichleType;
 	
 	

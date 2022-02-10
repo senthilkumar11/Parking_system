@@ -2,25 +2,33 @@ package com.zoho.parking_system.model;
 
 import java.util.Date;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 @Entity
 public class ParkingDetails {
 	@Id
 	@GeneratedValue
 	private Integer id;
-	private Integer slot;
+	@OneToOne(fetch = FetchType.EAGER,cascade = CascadeType.MERGE)
+	private Slot slot;
 	private String vehicleRegistrationNumber;
 	private String customerName;
 	private String phNumber;
 	private Date entranceTime;
 	private Date exitTime;
 	private Boolean availabilty;
+	@Enumerated(EnumType.STRING)
 	private VehicleType vehicleType;
 	private String parkingType;
 	private Double fee;
+	private boolean feeCollected;
 	
 	public Integer getId() {
 		return id;
@@ -28,10 +36,10 @@ public class ParkingDetails {
 	public void setId(Integer id) {
 		this.id = id;
 	}
-	public Integer getSlot() {
+	public Slot getSlot() {
 		return slot;
 	}
-	public void setSlot(Integer slot) {
+	public void setSlot(Slot slot) {
 		this.slot = slot;
 	}
 	public String getVehicleRegistrationNumber() {
@@ -88,6 +96,13 @@ public class ParkingDetails {
 	public void setFee(Double fee) {
 		this.fee = fee;
 	}
+	public boolean isFeeCollected() {
+		return feeCollected;
+	}
+	public void setFeeCollected(boolean feeCollected) {
+		this.feeCollected = feeCollected;
+	}
+	
 	
 	
 	

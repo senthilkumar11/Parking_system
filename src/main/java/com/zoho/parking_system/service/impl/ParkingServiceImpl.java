@@ -4,8 +4,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.zoho.parking_system.model.ParkingDetails;
@@ -17,8 +29,8 @@ import com.zoho.parking_system.repo.ParkingLotRepository;
 import com.zoho.parking_system.repo.SlotRepo;
 import com.zoho.parking_system.request.model.ParkingRequest;
 import com.zoho.parking_system.request.model.ParkingSystem;
-import com.zoho.parking_system.request.model.UnParkRequest;
-import com.zoho.parking_system.response.model.ParkingDetailResponse;
+import com.zoho.parking_system.request.model.SearchRequest;
+import com.zoho.parking_system.response.model.SearchParkingResponse;
 import com.zoho.parking_system.service.ParkingService;
 
 @Service
@@ -78,19 +90,20 @@ public class ParkingServiceImpl implements ParkingService {
 	}
 
 	@Override
-	public ParkingDetailResponse park(ParkingRequest parkingRequest) {
-		ParkingDetailResponse parkingDetailResponse=new ParkingDetailResponse();
+	public ParkingDetails park(ParkingRequest parkingRequest) {
+		SearchParkingResponse parkingDetailResponse=new SearchParkingResponse();
 		VehicleType type=parkingRequest.getVehicleType();
 		System.out.println(type);
-		Slot aSlot=slotRepo.findNextAvailableSlot(type.ordinal());
-		ParkingDetailResponse response=new ParkingDetailResponse();
+		Slot aSlot=slotRepo.findNextAvailableSlot(type.toString());
+		ParkingDetails parking=new ParkingDetails();
 		if(aSlot==null)
 		{
+			
 			System.out.println("Null");
+			return null;
 //			throw new Exception("ParkingFull");
 		}else {
 			aSlot.setAvailablity('P');
-			ParkingDetails parking=new ParkingDetails();
 			parking.setAvailabilty(true);
 			parking.setCustomerName(parkingRequest.getCustomerName());
 			parking.setEntranceTime(new Date());
@@ -98,35 +111,120 @@ public class ParkingServiceImpl implements ParkingService {
 			parking.setPhNumber(parkingRequest.getPhNumber());
 			parking.setVehicleRegistrationNumber(parkingRequest.getVehicleRegistrationNumber());
 			parking.setVehicleType(aSlot.getVehichleType());
-			parking.setSlot(aSlot.getId());		
 			aSlot=slotRepo.save(aSlot);
+			parking.setSlot(aSlot);		
 			parking=parkingDetailsRepository.save(parking);
-			response.setSlot(aSlot);
-			response.setParkingDetails(parking);
 		}
 		
-		return response;
+		return parking;
 	}
 
 	@Override
-	public ParkingDetailResponse unPark(UnParkRequest unpark) {
-		ParkingDetails parkingDetails=parkingDetailsRepository.findByVehichle(unpark.getVehicleNum());
-		if(parkingDetails==null)
+	public ParkingDetails unPark(int id) {
+		Optional<ParkingDetails> res=parkingDetailsRepository.findById(id);
+		if(!res.isPresent())
 		{
 			return null;
 		}
-		Optional<Slot> resSolt=slotRepo.findById(parkingDetails.getSlot());
+		ParkingDetails parkingDetails=res.get();
+		Optional<Slot> resSolt=slotRepo.findById(parkingDetails.getSlot().getId());
+		Slot slot= resSolt.get();
+		parkingDetails.setExitTime(new Date());
+		long duration= parkingDetails.getExitTime().getTime()-parkingDetails.getEntranceTime().getTime() ;
+		
+		long diffInMinutes = TimeUnit.MILLISECONDS.toMinutes(duration);
+		double cost=40;
+		System.out.println(diffInMinutes);
+		if((diffInMinutes-60)>0) {
+		cost+=Math.round(((diffInMinutes-60)/60.0f)*20);
+		}
+		parkingDetails.setFee(cost);
+		
+		parkingDetails.setParkingType("Collect Fee");
+		slot=slotRepo.save(slot);
+		parkingDetails.setSlot(slot);
+		parkingDetails=parkingDetailsRepository.save(parkingDetails);
+
+		
+		return parkingDetails;
+	}
+
+	@Override
+	public Optional<ParkingDetails> getParkingDetails(int id) {
+		// TODO Auto-generated method stub
+		
+		return parkingDetailsRepository.findById(id);
+	}
+
+	@Override
+	public ParkingDetails collectFee(int id) {
+		Optional<ParkingDetails> res=parkingDetailsRepository.findById(id);
+		if(!res.isPresent())
+		{
+			return null;
+		}
+		ParkingDetails parkingDetails=res.get();
+		Optional<Slot> resSolt=slotRepo.findById(parkingDetails.getSlot().getId());
 		Slot slot= resSolt.get();
 		slot.setAvailablity('A');
-		parkingDetails.setExitTime(new Date());
 		parkingDetails.setAvailabilty(false);
 		parkingDetails.setParkingType("Unavailable");
-		parkingDetails=parkingDetailsRepository.save(parkingDetails);
+		parkingDetails.setFeeCollected(true);
 		slot=slotRepo.save(slot);
-		ParkingDetailResponse response=new ParkingDetailResponse();
-		response.setParkingDetails(parkingDetails);
-		response.setSlot(slot);
-		return response;
+		parkingDetails.setSlot(slot);
+		parkingDetails=parkingDetailsRepository.save(parkingDetails);
+		return parkingDetails;
+	}
+
+	@Transactional
+	@Override
+	public SearchParkingResponse searchVehicleDetails(SearchRequest searchRequest) {
+		// TODO Auto-generated method stub
+		System.out.println(searchRequest.getVehicleType());
+		Specification<ParkingDetails> spec=new Specification<ParkingDetails>() {
+			
+			@Override
+			public Predicate toPredicate(Root<ParkingDetails> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+				// TODO Auto-generated method stub
+				 List<Predicate> predicates = new ArrayList<>();
+				 if(searchRequest.getAvailabilty()!=null)
+				 predicates.add(criteriaBuilder.equal(root.get("availabilty"), searchRequest.getAvailabilty()));
+				 if(searchRequest.getFloor()!=null) {
+					 predicates.add(criteriaBuilder.equal(root.join("slot", JoinType.LEFT).get("floorId"),searchRequest.getFloor()));
+				 }
+				 if(searchRequest.getSlot()!=null) {
+					 predicates.add(criteriaBuilder.equal(root.join	("slot", JoinType.LEFT).get("slotNumber"),searchRequest.getSlot()));
+				 }
+				 if(searchRequest.getCustomerName()!=null) {
+					 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("customerName")),"%"+searchRequest.getCustomerName().toLowerCase()+"%"));
+				 }
+				 if(searchRequest.getVehicleRegistrationNumber()!=null) {
+					 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("vehicleRegistrationNumber")),"%"+searchRequest.getVehicleRegistrationNumber().toLowerCase()+"%"));
+				 }
+				 if(searchRequest.getVehicleType()!=null) {
+					 predicates.add(criteriaBuilder.equal(root.get("vehicleType"),searchRequest.getVehicleType()));
+						
+				 }
+				 query.orderBy(criteriaBuilder.asc(root.join("slot", JoinType.LEFT).get("floorId")),criteriaBuilder.asc(root.join("slot", JoinType.LEFT).get("slotNumber")));
+				 return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+			}
+		};
+		Pageable paging = PageRequest.of(searchRequest.getPageNumber() - 1, searchRequest.getPageSize());
+		Page<ParkingDetails> parkingDetails=parkingDetailsRepository.findAll(spec,paging);
+		SearchParkingResponse searchParkingResponse=new SearchParkingResponse();
+		searchParkingResponse.setParkingDetails(parkingDetails.getContent());
+		searchParkingResponse.setHasMore(!parkingDetails.isLast());
+		searchParkingResponse.setPageSize(parkingDetails.getSize());
+		searchParkingResponse.setPageTotal(parkingDetails.getTotalPages());
+		searchParkingResponse.setTotal(parkingDetails.getTotalElements());
+//		List<ParkingDetails> parkingDetails=parkingDetailsRepository.findAll(spec);
+//		SearchParkingResponse searchParkingResponse=new SearchParkingResponse();
+//		searchParkingResponse.setParkingDetails(parkingDetails);
+//		searchParkingResponse.setHasMore(!parkingDetails.isLast());
+//		searchParkingResponse.setPageSize(parkingDetails.getSize());
+//		searchParkingResponse.setPageTotal(parkingDetails.getTotalPages());
+//		searchParkingResponse.setTotal(parkingDetails.getTotalElements());
+		return searchParkingResponse;
 	}
 
 }
