@@ -217,6 +217,7 @@ public class ParkingServiceImpl implements ParkingService {
 		searchParkingResponse.setPageSize(parkingDetails.getSize());
 		searchParkingResponse.setPageTotal(parkingDetails.getTotalPages());
 		searchParkingResponse.setTotal(parkingDetails.getTotalElements());
+		searchParkingResponse.setPageNumber(parkingDetails.getNumber()+1);
 //		List<ParkingDetails> parkingDetails=parkingDetailsRepository.findAll(spec);
 //		SearchParkingResponse searchParkingResponse=new SearchParkingResponse();
 //		searchParkingResponse.setParkingDetails(parkingDetails);

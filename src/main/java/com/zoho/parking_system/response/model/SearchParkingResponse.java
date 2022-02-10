@@ -13,10 +13,16 @@ public class SearchParkingResponse {
 	private Integer pageSize;
 	private Long total;
 	private Boolean hasMore;
-	
+	private Integer pageNumber;
 	
 
 	
+	public Integer getPageNumber() {
+		return pageNumber;
+	}
+	public void setPageNumber(Integer pageNumber) {
+		this.pageNumber = pageNumber;
+	}
 	public List<ParkingDetails> getParkingDetails() {
 		return parkingDetails;
 	}
