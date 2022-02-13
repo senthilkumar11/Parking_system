@@ -14,15 +14,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.zoho.parking_system.model.Fee;
 import com.zoho.parking_system.model.ParkingDetails;
 import com.zoho.parking_system.model.Slot;
+import com.zoho.parking_system.model.VehicleType;
+import com.zoho.parking_system.request.model.CouponRequest;
 import com.zoho.parking_system.request.model.ParkingRequest;
 import com.zoho.parking_system.request.model.ParkingSystem;
 import com.zoho.parking_system.request.model.SearchRequest;
 import com.zoho.parking_system.request.model.UnParkRequest;
+import com.zoho.parking_system.response.model.CouponResponse;
+import com.zoho.parking_system.response.model.ErrorResponse;
+import com.zoho.parking_system.response.model.HomeResponse;
 import com.zoho.parking_system.response.model.SearchParkingResponse;
+import com.zoho.parking_system.response.model.TransactionSummary;
 import com.zoho.parking_system.service.ParkingService;
 
 @RestController
@@ -31,6 +39,27 @@ import com.zoho.parking_system.service.ParkingService;
 public class ParkingController {
 	@Autowired
 	ParkingService parkingService;
+	
+	@GetMapping("/home")
+	public ResponseEntity<?> getAllDetails(){
+		
+		HomeResponse homeResponse=parkingService.getSystemDetails();
+		if(homeResponse!=null)
+		return new ResponseEntity<HomeResponse>(homeResponse, HttpStatus.ACCEPTED);
+		else 
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
+	@GetMapping("/transaction/{type}")
+	public ResponseEntity<?> getTransaction(@PathVariable int type){
+		
+		
+		TransactionSummary transactionSummary=parkingService.getTransaction(VehicleType.values()[type]);
+		if(transactionSummary!=null)
+		return new ResponseEntity<TransactionSummary>(transactionSummary, HttpStatus.ACCEPTED);
+		else 
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
+	
 	
 	@PostMapping("/system")
 	public ResponseEntity<?> createParkingSystem(@RequestBody ParkingSystem parkingSystem){
@@ -42,9 +71,18 @@ public class ParkingController {
 	}
 	@PostMapping("/park")
 	public ResponseEntity<?> parkVehicle(@RequestBody ParkingRequest parkingRequest){
-		
+		try {
 		ParkingDetails response=parkingService.park(parkingRequest);
 		return new ResponseEntity<ParkingDetails>(response,HttpStatus.ACCEPTED);
+		}catch(Exception e) {
+					
+		System.out.println(e.getMessage());
+		ErrorResponse error=new ErrorResponse();
+		error.setMessage(e.getMessage());
+		error.setCode(406);
+		return new ResponseEntity<ErrorResponse>(error,HttpStatus.NOT_ACCEPTABLE);
+				
+		}
 	}
 	
 	@PutMapping("/unPark/{id}")
@@ -78,4 +116,50 @@ public class ParkingController {
 		return new ResponseEntity<ParkingDetails>(HttpStatus.NOT_FOUND);
 		
 	}
+	
+	@GetMapping("/fee")
+	public ResponseEntity<?> getAllFee(){
+		List<Fee> allFee=parkingService.getAllFee();
+		if(allFee!=null)
+		return new ResponseEntity<List<Fee>>(allFee,HttpStatus.OK);
+		
+		return new ResponseEntity<List<Fee>>(HttpStatus.NOT_FOUND);
+		
+		
+	}
+	@PostMapping("/fee")
+	public ResponseEntity<?> saveFee(@RequestBody Fee fee){
+		Fee response=parkingService.saveFee(fee);
+		if(response!=null)
+		return new ResponseEntity<Fee>(response,HttpStatus.OK);
+		
+		return new ResponseEntity<Fee>(HttpStatus.NOT_FOUND);
+		
+		
+	}
+	@PostMapping("/coupon")
+	public ResponseEntity<?> generateCoupon(@RequestBody CouponRequest couponReq){
+		Boolean res=parkingService.createCoupon(couponReq);
+		if(res) {
+			return new ResponseEntity<Boolean>(true,HttpStatus.CREATED);
+		}else
+		return new ResponseEntity<Boolean>(false,HttpStatus.BAD_REQUEST);
+	}
+	@GetMapping("/coupon/{page}/{pageSize}")
+	public ResponseEntity<?> getCouponDetails(@PathVariable int page,@PathVariable int pageSize,@RequestParam("searchData") String searchData){
+		
+		CouponResponse response=parkingService.getCouponDetails(page,pageSize,searchData);
+		return new ResponseEntity<CouponResponse>(response,HttpStatus.OK);
+
+		
+	}
+	@PutMapping("coupon/apply/{id}")
+	public ResponseEntity<?> applyDiscountCode(@RequestBody CouponRequest couponReq, @PathVariable("id") int id){
+		ParkingDetails res=parkingService.applyDiscountCode(couponReq,id);
+		if(res!=null) {
+			return new ResponseEntity<ParkingDetails>(res,HttpStatus.CREATED);
+		}else
+		return new ResponseEntity<Boolean>(false,HttpStatus.BAD_REQUEST);
+	}
 }
+

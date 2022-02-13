@@ -2,6 +2,7 @@ package com.zoho.parking_system.request.model;
 
 import java.util.Date;
 
+import com.zoho.parking_system.model.ParkingType;
 import com.zoho.parking_system.model.VehicleType;
 
 public class ParkingRequest {
@@ -9,6 +10,9 @@ public class ParkingRequest {
 	private String customerName;
 	private String phNumber;
 	private VehicleType vehicleType;
+	private ParkingType parkingType;
+	private double fee;
+	
 	public String getVehicleRegistrationNumber() {
 		return vehicleRegistrationNumber;
 	}
@@ -32,6 +36,18 @@ public class ParkingRequest {
 	}
 	public void setVehicleType(VehicleType vehicleType) {
 		this.vehicleType = vehicleType;
+	}
+	public ParkingType getParkingType() {
+		return parkingType;
+	}
+	public void setParkingType(ParkingType parkingType) {
+		this.parkingType = parkingType;
+	}
+	public double getFee() {
+		return fee;
+	}
+	public void setFee(double fee) {
+		this.fee = fee;
 	}
 	
 	

@@ -15,7 +15,8 @@ public class Slot {
 	private Integer id;
 	private Integer floorId;
 	private Integer slotNumber;
-	private Character availablity;
+	@Enumerated(EnumType.STRING)
+	private ParkingType availablity;
 	@Enumerated(EnumType.STRING)
 	private VehicleType vehichleType;
 	
@@ -23,7 +24,7 @@ public class Slot {
 	public Slot() {
 		super();
 	}
-	public Slot(Integer floorId, Integer spotNumber, Character availablity, VehicleType vehichleType) {
+	public Slot(Integer floorId, Integer spotNumber, ParkingType availablity, VehicleType vehichleType) {
 		super();
 		this.floorId = floorId;
 		this.slotNumber = spotNumber;
@@ -49,10 +50,11 @@ public class Slot {
 	public void setSlotNumber(Integer slotNumber) {
 		this.slotNumber = slotNumber;
 	}
-	public Character getAvailablity() {
+	
+	public ParkingType getAvailablity() {
 		return availablity;
 	}
-	public void setAvailablity(Character availablity) {
+	public void setAvailablity(ParkingType availablity) {
 		this.availablity = availablity;
 	}
 	public VehicleType getVehichleType() {

@@ -1,5 +1,6 @@
 package com.zoho.parking_system;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -12,8 +13,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.zoho.parking_system.model.ERole;
+import com.zoho.parking_system.model.Fee;
 import com.zoho.parking_system.model.Role;
 import com.zoho.parking_system.model.User;
+import com.zoho.parking_system.model.VehicleType;
+import com.zoho.parking_system.repo.FeeRepository;
 import com.zoho.parking_system.repo.RoleRepository;
 import com.zoho.parking_system.repo.UserRepository;
 
@@ -25,7 +29,7 @@ public class ParkingSystemApplication {
 	}
 	@Bean
     public CommandLineRunner data( RoleRepository roleRepository,
-                                         UserRepository  userRepository,PasswordEncoder passwordEncoder) {
+                                         UserRepository  userRepository,PasswordEncoder passwordEncoder,FeeRepository feeRepository) {
         return args -> {
 
             // create a new book
@@ -61,6 +65,12 @@ public class ParkingSystemApplication {
 				userRepository.save(new User("admin","admin@gmail.com", passwordEncoder.encode("admin123"), "admin", "admin", "123456789",roles));
 			}
 			
+			
+			List<Fee> feeList=new ArrayList<>();
+			feeList.add(new Fee(VehicleType.BIKE, 40, 20));
+			feeList.add(new Fee(VehicleType.BUS, 100, 50));
+			feeList.add(new Fee(VehicleType.CAR, 60, 30));
+			feeRepository.saveAll(feeList);
         };
     }
 }

@@ -1,5 +1,6 @@
 package com.zoho.parking_system.request.model;
 
+import com.zoho.parking_system.model.ParkingType;
 import com.zoho.parking_system.model.VehicleType;
 
 public class SearchRequest {
@@ -12,6 +13,7 @@ public class SearchRequest {
 	private Integer pageNumber;
 	private Integer pageSize;
 	private Boolean availabilty;
+	private ParkingType parkingType;
 	
 	public String getVehicleRegistrationNumber() {
 		return vehicleRegistrationNumber;
@@ -61,6 +63,12 @@ public class SearchRequest {
 	}
 	public void setAvailabilty(Boolean availabilty) {
 		this.availabilty = availabilty;
+	}
+	public ParkingType getParkingType() {
+		return parkingType;
+	}
+	public void setParkingType(ParkingType parkingType) {
+		this.parkingType = parkingType;
 	}
 	
 	

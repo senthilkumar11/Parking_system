@@ -3,6 +3,7 @@ package com.zoho.parking_system.model;
 import java.util.Date;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -26,9 +27,17 @@ public class ParkingDetails {
 	private Boolean availabilty;
 	@Enumerated(EnumType.STRING)
 	private VehicleType vehicleType;
-	private String parkingType;
+	@Enumerated(EnumType.STRING)
+	private ParkingType parkingType;
 	private Double fee;
 	private boolean feeCollected;
+	private Double remainingHourFee;
+	private Double discount;
+	private Double basicFee;
+	private Double finalFee;
+	@OneToOne(fetch = FetchType.EAGER,cascade = CascadeType.MERGE)
+	private DiscountCoupon coupon;
+	
 	
 	public Integer getId() {
 		return id;
@@ -84,10 +93,11 @@ public class ParkingDetails {
 	public void setVehicleType(VehicleType vehicleType) {
 		this.vehicleType = vehicleType;
 	}
-	public String getParkingType() {
+	
+	public ParkingType getParkingType() {
 		return parkingType;
 	}
-	public void setParkingType(String parkingType) {
+	public void setParkingType(ParkingType parkingType) {
 		this.parkingType = parkingType;
 	}
 	public Double getFee() {
@@ -102,6 +112,40 @@ public class ParkingDetails {
 	public void setFeeCollected(boolean feeCollected) {
 		this.feeCollected = feeCollected;
 	}
+	
+	
+	public Double getBasicFee() {
+		return basicFee;
+	}
+	public void setBasicFee(Double basicFee) {
+		this.basicFee = basicFee;
+	}
+	
+	public DiscountCoupon getCoupon() {
+		return coupon;
+	}
+	public void setCoupon(DiscountCoupon coupon) {
+		this.coupon = coupon;
+	}
+	public Double getRemainingHourFee() {
+		return remainingHourFee;
+	}
+	public void setRemainingHourFee(Double remainingHourFee) {
+		this.remainingHourFee = remainingHourFee;
+	}
+	public Double getDiscount() {
+		return discount;
+	}
+	public void setDiscount(Double discount) {
+		this.discount = discount;
+	}
+	public Double getFinalFee() {
+		return finalFee;
+	}
+	public void setFinalFee(Double finalFee) {
+		this.finalFee = finalFee;
+	}
+	
 	
 	
 	
