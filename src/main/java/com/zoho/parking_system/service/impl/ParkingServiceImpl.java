@@ -405,7 +405,9 @@ public class ParkingServiceImpl implements ParkingService {
 
 	@Override
 	public TransactionSummary getTransaction(VehicleType type) {
+		
 		TransactionSummary transaction=new TransactionSummary();
+		transaction.setVehicleType(type);
 		try {
 			transaction.setTotalSlot(slotRepo.countTotalSlot(type.toString()));
 			transaction.setAvailableSlot(slotRepo.countAvailableSlot(type.toString()));

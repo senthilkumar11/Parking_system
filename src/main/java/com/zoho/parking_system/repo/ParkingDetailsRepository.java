@@ -18,8 +18,8 @@ public interface ParkingDetailsRepository extends PagingAndSortingRepository<Par
 	Page<ParkingDetails> findAll(Specification<ParkingDetails> spec, Pageable paging);
 //	List<ParkingDetails> findAll(Specification<ParkingDetails> spec);
 	@Query(value="Select sum(p.final_fee) from parking_details p where p.vehicle_type=?1 and availabilty=0 and p.final_fee is not null",nativeQuery=true)
-	double sumAllFee(String string);
+	Double sumAllFee(String string);
 	@Query(value="Select count(*) from parking_details p where p.vehicle_type=?1 and availabilty=0",nativeQuery=true)
-	long countAllCompletedTransaction(String string);
+	Long countAllCompletedTransaction(String string);
 
 }
