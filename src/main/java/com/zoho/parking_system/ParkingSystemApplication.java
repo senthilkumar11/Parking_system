@@ -67,10 +67,12 @@ public class ParkingSystemApplication {
 			
 			
 			List<Fee> feeList=new ArrayList<>();
+			if(feeRepository.count()<3) {
 			feeList.add(new Fee(VehicleType.BIKE, 40, 20));
 			feeList.add(new Fee(VehicleType.BUS, 100, 50));
 			feeList.add(new Fee(VehicleType.CAR, 60, 30));
 			feeRepository.saveAll(feeList);
+			}
         };
     }
 }

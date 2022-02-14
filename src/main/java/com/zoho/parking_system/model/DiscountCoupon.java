@@ -1,5 +1,7 @@
 package com.zoho.parking_system.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,6 +21,8 @@ public class DiscountCoupon {
 	private Boolean used;
 	@Column(unique = true)
 	private String coupon;
+	private Date createdDate;
+	private Date usedDate;
 	public Integer getId() {
 		return id;
 	}
@@ -49,15 +53,28 @@ public class DiscountCoupon {
 	public void setCoupon(String coupon) {
 		this.coupon = coupon;
 	}
-	public DiscountCoupon(Double basicDiscount, Double hourlyDiscount, Boolean used, String coupon) {
+	public DiscountCoupon(Double basicDiscount, Double hourlyDiscount, Boolean used, String coupon, Date createdDate) {
 		super();
 		this.basicDiscount = basicDiscount;
 		this.hourlyDiscount = hourlyDiscount;
 		this.used = used;
 		this.coupon = coupon;
+		this.createdDate=createdDate;
 	}
 	public DiscountCoupon() {
 		super();
+	}
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+	public Date getUsedDate() {
+		return usedDate;
+	}
+	public void setUsedDate(Date usedDate) {
+		this.usedDate = usedDate;
 	}
 		
 	

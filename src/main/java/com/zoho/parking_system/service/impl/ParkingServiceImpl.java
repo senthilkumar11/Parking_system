@@ -195,7 +195,7 @@ public class ParkingServiceImpl implements ParkingService {
 	}
 
 	@Override
-	public ParkingDetails collectFee(int id) {
+	public ParkingDetails collectFee(int id) throws Exception {
 		Optional<ParkingDetails> res = parkingDetailsRepository.findById(id);
 		if (!res.isPresent()) {
 			return null;
@@ -209,8 +209,13 @@ public class ParkingServiceImpl implements ParkingService {
 		DiscountCoupon coupon;
 		if (parkingDetails.getCoupon() != null) {
 			coupon = parkingDetails.getCoupon();
+			if(!coupon.getUsed()) {
 			coupon.setUsed(true);
+			coupon.setUsedDate(new Date());
 			couponRepo.save(coupon);
+			}else {
+				throw new Exception("Coupon already used please add new coupon");
+			}
 		}
 		slot = slotRepo.save(slot);
 		parkingDetails.setSlot(slot);
@@ -297,10 +302,11 @@ public class ParkingServiceImpl implements ParkingService {
 		// TODO Auto-generated method stub
 		try {
 			List<DiscountCoupon> coupons = new ArrayList<DiscountCoupon>();
+			Date createdDate=new Date();
 			for (int i = 0; i < couponReq.getCount(); i++) {
 				String code = createRandomCode(8);
 				coupons.add(
-						new DiscountCoupon(couponReq.getBasicDiscount(), couponReq.getHourlyDiscount(), false, code));
+						new DiscountCoupon(couponReq.getBasicDiscount(), couponReq.getHourlyDiscount(), false, code,createdDate));
 			}
 			couponRepo.saveAll(coupons);
 			return true;
@@ -339,7 +345,7 @@ public class ParkingServiceImpl implements ParkingService {
 					predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("coupon")),
 							"%" + searchData.toLowerCase() + "%"));
 				}
-				query.orderBy(criteriaBuilder.asc(root.get("used")));
+				query.orderBy(criteriaBuilder.asc(root.get("used")),criteriaBuilder.desc(root.get("createdDate")));
 				return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 			}
 		};

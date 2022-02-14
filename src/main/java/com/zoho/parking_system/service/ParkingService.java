@@ -27,7 +27,7 @@ public interface ParkingService {
 
 	Optional<ParkingDetails> getParkingDetails(int id);
 
-	ParkingDetails collectFee(int id);
+	ParkingDetails collectFee(int id) throws Exception;
 
 	SearchParkingResponse searchVehicleDetails(SearchRequest searchRequest);
 
